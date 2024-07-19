@@ -204,6 +204,12 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+vim.api.nvim_create_autocmd('BufWritePre', {
+  pattern = { '*.lua', '*.py', '*.js', '*.tsx', '*.json', '*.ts' },
+  callback = function()
+    require('conform').format { async = true, lsp_fallback = true }
+  end,
+})
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -417,7 +423,7 @@ require('lazy').setup({
       'hrsh7th/nvim-cmp',
       'hrsh7th/cmp-nvim-lsp',
       'L3MON4D3/LuaSnip',
-      {'VonHeikemen/lsp-zero.nvim', branch = 'v3.x'},
+      { 'VonHeikemen/lsp-zero.nvim', branch = 'v3.x' },
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
       { 'j-hui/fidget.nvim', opts = {} },
@@ -546,8 +552,15 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-         clangd = {},
-         rust_analyzer = {},
+        clangd = {},
+        tsserver = {
+          settings = {
+            format = {
+              enable = true,
+            },
+          },
+        },
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -632,11 +645,13 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-         python = { "isort", "black" },
+        python = { 'isort', 'black' },
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-         javascript = { { "prettierd", "prettier" } },
+        javascript = { { 'prettierd', 'prettier' } },
+        typescript = { { 'prettierd', 'prettier' } },
+        typescriptreact = { { 'prettierd', 'prettier' } },
       },
     },
   },
@@ -808,7 +823,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'css', 'html', 'javascript', 'json', 'lua', 'luadoc', 'markdown', 'typescript','vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'css', 'html', 'javascript', 'json', 'lua', 'luadoc', 'markdown', 'typescript', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
